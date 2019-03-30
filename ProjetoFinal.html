@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Página do Projeto Final - Biblioteca do IC</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <h1>Página do Projeto Final - Biblioteca do IC</h1>
+    <br>
+    <div id="login_div">
+            <p>Login</p>
+            <br>
+
+            <label for="email">Email:</label>
+            <input type="text" id="email" name="email" required>
+
+            <label for="senha">Senha:</label>
+            <input type="password" id="senha" name="senha" minlength="8" required>
+
+        <input type="submit" value="Entrar" onclick="login()">
+    </div>
+
+    <div id="main_div" style="display: none">
+        <input type="button" value="Cadastrar Livro" onclick="cadastrar_livro()">
+        <input type="button" value="Incrementar Livro" onclick="incrementar_livro()">
+        <input type="button" value="Remover Livro" onclick="remover_livro()">
+        <input type="button" value="Decrementar Livro" onclick="decrementar_livro()">
+        <input type="button" value="Emprestar Livro" onclick="emprestar_livro()">
+        <input type="button" value="Devolver Livro" onclick="devolver_livro()">
+        <input type="button" value="Exibir estoque" onclick="exibir_estoque()">
+        <input type="button" value="Exibir alunos" onclick="exibir_alunos()">
+        <input type="button" value="Sair" onclick="logout()">
+    </div>
+    
+
+
+    <script>
+        // classe para criar e controlar os usuarios
+        class Usuario {
+            constructor(email, senha) {
+                this.email = email;
+                this.senha = senha
+            }
+        }
+        
+        // classe para criar e controlar os alunos
+        class Aluno {
+            constructor(matricula, cpf, nome, email, livros) {
+                this.matricula = matricula;
+                this.cpf = cpf
+                this.nome = nome;
+                this.email = email;
+                this.livros = livros;
+            }
+            
+            emprestar_livro(isbn) {
+                this.livros.push(isbn)
+            }
+
+            devolver_livro(isbn) {
+                index = this.livros.indexOf(isbn)
+                this.livros.splice(index, 1)
+            }
+            
+            exibir_livros_emprestados() { 
+                var saida = 'Lista de livros emprestados:\n';
+                this.livros.forEach(function (isbn, indice, array) {
+                    saida += 'Livro: ' + 'ISBN= ' + isbn + '\n';
+                });
+                return saida;
+            }
+        }
+        
+        class Livro {
+            constructor(isbn, nome, quantidade){
+                this.isbn = isbn;
+                this.nome = nome;
+                this.quantidade = quantidade;
+            }
+
+            incrementar(){
+                this.quantidade += 1
+            }
+
+            decrementar(){
+                if (this.quantidade == 0) {
+                    return -1;
+                }
+                this.quantidade -= 1
+                return 0;
+            }
+        }
+        
+        function login() {
+            var email = document.getElementById("email").value;
+            var senha = document.getElementById("senha").value;
+            
+            // buscamos um usuario no sistema que corresponda ao email digitado
+            var usuario = usuarios.find(user => user.email == email);
+            
+            // se o usuario nao existir
+            if (usuario === undefined) {
+                alert('Email ou senha inválidos. Tente novamente');
+                return;
+            }
+            // se a senha coincidir com a digitada, autorizamos o acesso
+            if (usuario.senha === senha) {
+                alert('Acesso autorizado!');
+
+                document.getElementById('login_div').style.display = 'none';
+                document.getElementById('main_div').style.display = 'block';
+
+                return;
+            }
+            // caso contrario, nao permitimos
+            alert('Email ou senha inválidos. Tente novamente');
+            return;
+            
+        }
+        
+        function logout() {
+            document.getElementById('login_div').style.display = 'block';
+            document.getElementById('main_div').style.display = 'none';
+        }
+
+        function exibir_estoque() {
+            var saida = 'Lista de livros cadastrados:\n\n';
+            livros.forEach(function (item, indice, array) {
+                saida += 'Livro:' + '\nISBN: ' + item.isbn + '\nNome: ' + item.nome + '\nQuantidade: ' + item.quantidade + '\n\n';
+            });
+            alert(saida)
+        }
+        
+        function exibir_alunos() {
+            var saida = 'Lista de alunos cadastrados:\n\n';
+            alunos.forEach(function (item, indice, array) {
+                saida += 'Aluno:' + '\nNome: ' + item.nome + '\nCPF: ' + item.cpf + '\nMatricula: ' + item.matricula + '\nEmail: ' + item.email + '\n';
+                saida += item.exibir_livros_emprestados();
+                saida += '\n'
+            });
+            alert(saida)
+        }
+
+        var livros = [];
+        var alunos = [];
+        var usuarios = [];
+
+        alunos.push(new Aluno('12345678', '123456789', 'caue', 'caue@email.com', []));
+        alunos.push(new Aluno('87654321', '987654321', 'fabio', 'fabio@email.com', []));
+        usuarios.push(new Usuario('adm@ic.ufal.br', 'password'));
+
+        function cadastrar_livro() {
+            var isbn = prompt("Digite o ISBN do livro a ser cadastrado:");
+            var nome = prompt("Digite o nome do livro:");
+            var quantidade = parseInt(prompt("Digite a quantidade de unidades:"));
+
+            if (isbn && nome && quantidade) {
+                if (livros.find(livro => livro.isbn === isbn) == undefined) {
+                    if (quantidade < 0){
+                        alert('Por favor, coloque uma quantidade válida! (valor positivo)');
+                        return;
+                    }
+
+                    var livro = new Livro(isbn, nome, quantidade); 
+                    livros.push(livro)
+
+                    alert("Livro cadastrado com sucesso!");
+                }
+                else {
+                    alert('Operação falhou! Livro já cadastrado no sistema!');
+                }
+            }  
+            else {
+                alert('Por favor, coloque dados válidos');
+                return;
+            }
+        }
+
+        function incrementar_livro() {
+            var isbn = prompt("Digite o ISBN do livro a ser incrementado:");
+            livro = livros.find(livro => livro.isbn === isbn);
+            if (livro === undefined) {
+                alert('Operação Falhou! ISBN não encontrado no sistema!');
+                return;
+            }
+            livro.incrementar();
+            alert('Livro incrementado com sucesso!');
+        }
+        
+        function decrementar_livro() {
+            var isbn = prompt("Digite o ISBN do livro a ser decrementado:");
+            livro = livros.find(livro => livro.isbn === isbn);
+            if (livro === undefined) {
+                alert('Operação Falhou! ISBN não encontrado no sistema!');
+                return;
+            }
+
+            resultado_operacao = livro.decrementar();
+
+            if (resultado_operacao == -1) {
+                alert('Operação falhou! O livro não pode ser decrementado! Existem 0 unidades dele no sistema!');
+                return;
+            } 
+            alert('Livro decrementado com sucesso!');
+        }
+
+        function remover_livro() {
+            var isbn = prompt("Digite o ISBN do livro a ser removido:");
+            index = livros.findIndex(livro => livro.isbn === isbn);
+            if (index === -1) {
+                alert('Operação Falhou! ISBN não encontrado no sistema!');
+                return;
+            }
+            livros.splice(index, 1)
+            alert('Livro removido do sistema com sucesso!');
+        }
+
+        function emprestar_livro() {
+            var cpf = prompt("Digite o CPF do aluno que irá receber o livro:");
+            var isbn = prompt("Digite o ISBN do livro a ser emprestado:");
+            aluno = alunos.find(aluno => aluno.cpf === cpf);
+            if (aluno === undefined) {
+                alert('Operação falhou! Aluno não encontrado!');
+                return;
+            }
+            livro = livros.find(livro => livro.isbn === isbn);
+            if (livro === undefined) {
+                alert('Operação falhou! Livro não encontrado!');
+                return;
+            }
+            resultado_operacao = livro.decrementar();
+            if (resultado_operacao ==  -1) {
+                alert('Operação falhou! Quantidade de livro insuficiente para realizar o empréstimo');
+                return;
+            }
+            aluno.emprestar_livro(isbn)
+            alert('Livro emprestado com sucesso!')
+        }
+
+        function devolver_livro() {
+            var cpf = prompt("Digite o CPF do aluno que irá devolver o livro:");
+            var isbn = prompt("Digite o ISBN do livro a ser devolvido:");
+            aluno = alunos.find(aluno => aluno.cpf === cpf);
+            if (aluno === undefined) {
+                alert('Operação falhou! Aluno não encontrado!');
+                return;
+            }
+            index_livro = aluno.livros.indexOf(isbn);
+            if (index_livro === -1) {
+                alert('Operação falhou! Livro não encontrado!');
+                return;
+            }
+            aluno.livros.splice(index_livro, 1)
+            livro = livros.find(livro => livro.isbn === isbn);
+            livro.incrementar()
+            alert('Livro devolvido com sucesso!')
+        }
+
+    </script>
+</body>
+</html>
